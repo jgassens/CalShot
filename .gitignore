@@ -9,3 +9,5 @@ dev/*
 node_modules/
 npm-debug.log*
 Resources/chrono.bundle.js.map
+.notary/
+*.p8

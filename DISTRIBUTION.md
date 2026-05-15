@@ -48,7 +48,17 @@ CALSHOT_SIGNING_IDENTITY="Developer ID Application: Name (TEAMID)" ./script/buil
 
 ## Notarize
 
-Create a notarytool keychain profile once:
+Create a `notarytool` keychain profile once. Prefer an App Store Connect API key
+because it can be scoped and reused without storing an Apple ID password:
+
+```bash
+xcrun notarytool store-credentials calshot-notary \
+  --key /path/to/AuthKey_KEYID.p8 \
+  --key-id "KEYID" \
+  --issuer "ISSUER_UUID"
+```
+
+If you deliberately use an Apple ID app-specific password instead, use:
 
 ```bash
 xcrun notarytool store-credentials calshot-notary \
@@ -56,6 +66,8 @@ xcrun notarytool store-credentials calshot-notary \
   --team-id "C2N7W5247T" \
   --password "APP_SPECIFIC_PASSWORD"
 ```
+
+Do not commit `.p8` files or local `.notary/` folders to this repository.
 
 Then build, submit, staple, and verify:
 
