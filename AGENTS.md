@@ -14,9 +14,13 @@
 - Generate deterministic OCR smoke images: `./script/generate_smoke_images.sh`
 - Run the realistic OCR smoke suite through the real app bundle: `./script/smoke_images.sh`
 - Launch one smoke image through the real app bundle: `./script/build_and_run.sh --image build/SmokeImages/01_university_seminar_flyer.png`
+- Build a distributable DMG: `./script/build_dmg.sh`
+- Build, notarize, staple, and verify a release DMG: `CALSHOT_NOTARY_PROFILE=<keychain-profile> ./script/build_dmg.sh --notarize`
+- Distribution builds use bundle ID `com.jgassens.CalShot` and should be signed with a Developer ID Application certificate.
 
 ## Product Rules
 - Keep OCR and parsing local. Do not add cloud OCR, LLM calls, or telemetry.
+- Network access is limited to resolving user-provided event links so shortened URLs can become direct Teams/Zoom/Meet/Webex links.
 - Do not log full OCR text in release builds.
 - Use EventKit write-only access and the default calendar only. Do not add a calendar picker unless full-access mode is explicitly accepted later.
 - Menu-bar icon drag/drop is the first post-Phase 0+1 input surface; route it through the same OCR/review pipeline as Open Image and clipboard image.

@@ -1,6 +1,6 @@
 name: CalShot
 options:
-  bundleIdPrefix: com.local
+  bundleIdPrefix: com.jgassens
   createIntermediateGroups: true
   deploymentTarget:
     macOS: "14.0"
@@ -26,11 +26,15 @@ targets:
         CFBundleIdentifier: "$(PRODUCT_BUNDLE_IDENTIFIER)"
         CFBundleInfoDictionaryVersion: "6.0"
         CFBundleName: "$(PRODUCT_NAME)"
+        CFBundleDisplayName: CalShot
         CFBundlePackageType: APPL
         CFBundleShortVersionString: "1.0"
         CFBundleVersion: "1"
         CFBundleIconName: AppIcon
+        LSApplicationCategoryType: public.app-category.productivity
+        LSMinimumSystemVersion: "14.0"
         LSUIElement: true
+        NSHumanReadableCopyright: "Copyright (c) 2026 Jeremiah Gassensmith. All rights reserved."
         NSCalendarsWriteOnlyAccessUsageDescription: "Create calendar events from screenshots you review."
         NSCalendarsFullAccessUsageDescription: "Show selected-calendar availability and save reviewed events to the calendar you choose."
         NSServices:
@@ -51,7 +55,7 @@ targets:
         com.apple.security.network.client: true
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.local.CalShot
+        PRODUCT_BUNDLE_IDENTIFIER: com.jgassens.CalShot
         PRODUCT_NAME: CalShot
         SWIFT_VERSION: "5.9"
         MACOSX_DEPLOYMENT_TARGET: "14.0"
@@ -75,7 +79,7 @@ targets:
       - target: CalShot
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.local.CalShotTests
+        PRODUCT_BUNDLE_IDENTIFIER: com.jgassens.CalShotTests
         PRODUCT_NAME: CalShotTests
         SWIFT_VERSION: "5.9"
         MACOSX_DEPLOYMENT_TARGET: "14.0"

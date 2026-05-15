@@ -4,8 +4,12 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>CalShot</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -18,14 +22,18 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
-	<key>CFBundleIconName</key>
-	<string>AppIcon</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.productivity</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.0</string>
 	<key>LSUIElement</key>
 	<true/>
-	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
-	<string>Create calendar events from screenshots you review.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>Show selected-calendar availability and save reviewed events to the calendar you choose.</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>Create calendar events from screenshots you review.</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright (c) 2026 Jeremiah Gassensmith. All rights reserved.</string>
 	<key>NSServices</key>
 	<array>
 		<dict>

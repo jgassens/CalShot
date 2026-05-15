@@ -19,7 +19,7 @@ enum SelectedTextCaptureError: Error, LocalizedError {
 
 enum SelectedTextCapture {
     #if DEBUG
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.local.CalShot", category: "SelectedTextCapture")
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.jgassens.CalShot", category: "SelectedTextCapture")
     #endif
 
     @MainActor

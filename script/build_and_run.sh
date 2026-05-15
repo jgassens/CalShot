@@ -9,6 +9,7 @@ DERIVED_DATA="${CALSHOT_DERIVED_DATA:-/private/tmp/CalShotDerivedData}"
 DERIVED_APP_PATH="$DERIVED_DATA/Build/Products/$CONFIGURATION/CalShot.app"
 DEV_DIR="${CALSHOT_DEV_DIR:-$PWD/dev}"
 APP_PATH="$DEV_DIR/CalShot.app"
+APP_BUNDLE_ID="${CALSHOT_BUNDLE_ID:-com.jgassens.CalShot}"
 
 VERIFY=0
 CLEAN=0
@@ -70,7 +71,7 @@ if [[ ! -f Resources/chrono.bundle.js ]]; then
 fi
 
 if [[ -n "$IMAGE_PATH" ]]; then
-  CONTAINER_INPUT_DIR="$HOME/Library/Containers/com.local.CalShot/Data/tmp/CalShotSmokeInput"
+  CONTAINER_INPUT_DIR="$HOME/Library/Containers/$APP_BUNDLE_ID/Data/tmp/CalShotSmokeInput"
   mkdir -p "$CONTAINER_INPUT_DIR"
   STAGED_IMAGE_PATH="$CONTAINER_INPUT_DIR/$(basename "$IMAGE_PATH")"
   cp "$IMAGE_PATH" "$STAGED_IMAGE_PATH"
@@ -78,7 +79,7 @@ if [[ -n "$IMAGE_PATH" ]]; then
 fi
 
 if [[ -n "$EMAIL_PATH" ]]; then
-  CONTAINER_INPUT_DIR="$HOME/Library/Containers/com.local.CalShot/Data/tmp/CalShotEmailInput"
+  CONTAINER_INPUT_DIR="$HOME/Library/Containers/$APP_BUNDLE_ID/Data/tmp/CalShotEmailInput"
   mkdir -p "$CONTAINER_INPUT_DIR"
   STAGED_EMAIL_PATH="$CONTAINER_INPUT_DIR/$(basename "$EMAIL_PATH")"
   cp "$EMAIL_PATH" "$STAGED_EMAIL_PATH"

@@ -4,7 +4,9 @@ CalShot is a native macOS menu-bar agent app that turns a screenshot or image in
 
 The app processes everything locally. It uses Apple Vision for OCR, Chrono plus native Apple detectors for parsing, a mandatory editable review window, EventKit write-only calendar access, and an `.ics` fallback when direct calendar saving is unavailable.
 
-This README is the project roadmap and implementation contract. Codex should follow the phases in order and should not pull later-phase features into the first milestone unless explicitly instructed.
+CalShot is prepared for direct macOS distribution as a Developer ID signed DMG. See `DISTRIBUTION.md` for the release, notarization, and verification workflow.
+
+This README is the project roadmap and implementation contract. Some later-phase features have already been implemented while the product was exercised against real Outlook and calendar workflows; keep the tests and distribution scripts as the current source of truth.
 
 ---
 
@@ -74,7 +76,7 @@ These are intentionally out of scope for Phase 0+1:
 - No Yoink-style shelf yet.
 - No global hotkey yet.
 - No screenshot capture yet.
-- No App Store distribution work yet.
+- No App Store distribution in this slice. Direct Developer ID DMG distribution is supported.
 
 The first milestone is a reliable local OCR-to-review-to-calendar loop.
 
@@ -176,6 +178,7 @@ The default privacy model is strict:
 - local OCR only;
 - local parsing only;
 - no network calls for screenshots or OCR text;
+- bounded redirect checks only for user-provided event links, so short URLs can become direct Teams/Zoom/Meet/Webex event links;
 - no telemetry;
 - no OCR text in release logs;
 - temp screenshots deleted after processing;
@@ -468,7 +471,7 @@ Acceptance criteria:
 - The app target is named `CalShot`.
 - The scheme is named `CalShot`.
 - The bundle display name is `CalShot`.
-- The bundle ID is `com.local.CalShot`.
+- The bundle ID is `com.jgassens.CalShot`.
 - Deployment target is macOS 14+.
 
 ### Slice 0.2 — Menu-bar agent shell
@@ -947,6 +950,7 @@ Automated acceptance:
 xcodegen generate
 xcodebuild -project CalShot.xcodeproj -scheme CalShot -destination 'platform=macOS' test
 ./script/build_and_run.sh --verify
+./script/build_dmg.sh
 ```
 
 Manual acceptance:
@@ -1264,7 +1268,14 @@ Fallbacks:
 
 Goal: make CalShot distributable beyond local development.
 
-This phase is not needed for early local use.
+Current direct-distribution lane:
+
+```bash
+./script/build_dmg.sh
+CALSHOT_NOTARY_PROFILE=calshot-notary ./script/build_dmg.sh --notarize
+```
+
+The release script builds a Release archive, signs with a Developer ID Application identity, verifies bundle resources and entitlements, creates a DMG with an `/Applications` symlink, optionally submits to Apple notarization, staples the result, and writes a SHA-256 sidecar.
 
 Possible slices:
 
@@ -1289,6 +1300,8 @@ Possible slices:
 - archive app;
 - notarize;
 - staple;
+- verify Gatekeeper acceptance;
+- publish the exact DMG that passed verification.
 - test on a clean Mac user account.
 
 ### Slice 6.4 — App Store decision
@@ -1587,6 +1600,7 @@ xcodebuild -project CalShot.xcodeproj -scheme CalShot -destination 'platform=mac
 - Use EventKit write-only access and the default calendar in v1.
 - Do not add a calendar picker in v1.
 - Do not add cloud OCR, telemetry, or LLM calls.
+- Keep network access limited to resolving user-provided event links.
 - Do not log OCR text in release builds.
 - Parser tests must use frozen reference dates.
 ````

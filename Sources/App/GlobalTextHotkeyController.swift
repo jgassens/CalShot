@@ -7,7 +7,7 @@ final class GlobalTextHotkeyController {
     private static let signature = fourCharacterCode("CSHT")
     private static let hotKeyID = UInt32(1)
     #if DEBUG
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.local.CalShot", category: "GlobalTextHotkey")
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.jgassens.CalShot", category: "GlobalTextHotkey")
     #endif
 
     private var eventHotKey: EventHotKeyRef?
