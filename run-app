@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+APP_PATH="${CALSHOT_APP_PATH:-$ROOT/dev/CalShot.app}"
+
+if [[ ! -d "$APP_PATH" ]]; then
+  if [[ -d "/Applications/CalShot.app" ]]; then
+    APP_PATH="/Applications/CalShot.app"
+  else
+    echo "CalShot.app was not found." >&2
+    echo "Build it first with: ./script/build_and_run.sh --verify" >&2
+    exit 1
+  fi
+fi
+
+if pgrep -x "CalShot" >/dev/null 2>&1; then
+  pkill -x "CalShot"
+fi
+
+OPEN_ARGS=(-n "$APP_PATH")
+if [[ $# -gt 0 ]]; then
+  OPEN_ARGS+=(--args "$@")
+fi
+
+/usr/bin/open "${OPEN_ARGS[@]}"
+echo "CalShot launched: $APP_PATH"

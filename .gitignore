@@ -1,0 +1,11 @@
+.DS_Store
+CalShot.xcodeproj/
+build/
+dist/
+DerivedData/
+.xcodegen/
+dev/*
+!dev/.gitkeep
+node_modules/
+npm-debug.log*
+Resources/chrono.bundle.js.map

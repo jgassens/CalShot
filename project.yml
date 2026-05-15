@@ -1,0 +1,95 @@
+name: CalShot
+options:
+  bundleIdPrefix: com.local
+  createIntermediateGroups: true
+  deploymentTarget:
+    macOS: "14.0"
+targets:
+  CalShot:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources
+      - path: Resources/Assets.xcassets
+        buildPhase: resources
+      - path: Resources/chrono.bundle.js
+        buildPhase: resources
+        optional: true
+      - path: Resources/Licenses
+        buildPhase: resources
+        optional: true
+    info:
+      path: Resources/Info.plist
+      properties:
+        CFBundleDevelopmentRegion: "$(DEVELOPMENT_LANGUAGE)"
+        CFBundleExecutable: "$(EXECUTABLE_NAME)"
+        CFBundleIdentifier: "$(PRODUCT_BUNDLE_IDENTIFIER)"
+        CFBundleInfoDictionaryVersion: "6.0"
+        CFBundleName: "$(PRODUCT_NAME)"
+        CFBundlePackageType: APPL
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        CFBundleIconName: AppIcon
+        LSUIElement: true
+        NSCalendarsWriteOnlyAccessUsageDescription: "Create calendar events from screenshots you review."
+        NSCalendarsFullAccessUsageDescription: "Show selected-calendar availability and save reviewed events to the calendar you choose."
+        NSServices:
+          - NSMenuItem:
+              default: Send to CalShot
+            NSMessage: sendTextToCalShot
+            NSPortName: CalShot
+            NSSendTypes:
+              - NSStringPboardType
+              - public.utf8-plain-text
+              - public.plain-text
+    entitlements:
+      path: Resources/CalShot.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.personal-information.calendars: true
+        com.apple.security.files.user-selected.read-only: true
+        com.apple.security.network.client: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.local.CalShot
+        PRODUCT_NAME: CalShot
+        SWIFT_VERSION: "5.9"
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_ENTITLEMENTS: Resources/CalShot.entitlements
+        DEVELOPMENT_TEAM: C2N7W5247T
+        PROVISIONING_PROFILE_SPECIFIER: ""
+        ENABLE_APP_SANDBOX: YES
+        ENABLE_HARDENED_RUNTIME: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+  CalShotTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests
+      - path: Resources/chrono.bundle.js
+        buildPhase: resources
+        optional: true
+    dependencies:
+      - target: CalShot
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.local.CalShotTests
+        PRODUCT_NAME: CalShotTests
+        SWIFT_VERSION: "5.9"
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "Apple Development"
+        DEVELOPMENT_TEAM: C2N7W5247T
+        PROVISIONING_PROFILE_SPECIFIER: ""
+schemes:
+  CalShot:
+    build:
+      targets:
+        CalShot: all
+        CalShotTests: [test]
+    test:
+      targets:
+        - CalShotTests

@@ -1,0 +1,15 @@
+{
+  "name": "calshot-chrono-bundle",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "bundle:chrono": "esbuild script/chrono-entry.js --bundle --format=iife --global-name=__CalShotChronoBundle --target=safari17 --minify --outfile=Resources/chrono.bundle.js"
+  },
+  "dependencies": {
+    "chrono-node": "^2.9.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}
+
