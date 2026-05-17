@@ -18,6 +18,12 @@
 - Build, notarize, staple, and verify a release DMG: `CALSHOT_NOTARY_PROFILE=<keychain-profile> ./script/build_dmg.sh --notarize`
 - Distribution builds use bundle ID `com.jgassens.CalShot` and should be signed with a Developer ID Application certificate.
 
+## Sparkle Versioning
+- Before committing and pushing changes that may be released from `main`, increment `CFBundleVersion` in `project.yml`. Sparkle only treats a build as an update when the appcast build number is greater than the installed app's build number.
+- Increment `CFBundleShortVersionString` for user-facing releases when appropriate; otherwise keep the marketing version stable and only bump `CFBundleVersion`.
+- After changing either version, run `xcodegen generate` so `Resources/Info.plist` stays in sync with `project.yml`.
+- For a release, build/notarize the DMG, run `script/generate_appcast.sh --artifact <dmg> --release-tag <tag>`, then upload both the DMG and `appcast.xml` to the matching GitHub Release.
+
 ## Product Rules
 - Keep OCR and parsing local. Do not add cloud OCR, LLM calls, or telemetry.
 - Network access is limited to resolving user-provided event links so shortened URLs can become direct Teams/Zoom/Meet/Webex links.
