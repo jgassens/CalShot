@@ -11,6 +11,7 @@ DEV_DIR="${CALSHOT_DEV_DIR:-$PWD/dev}"
 APP_PATH="$DEV_DIR/CalShot.app"
 IMAGE_DIR="${1:-build/SmokeImages}"
 APP_BUNDLE_ID="${CALSHOT_BUNDLE_ID:-com.jgassens.CalShot}"
+SMOKE_REFERENCE_DATE="${CALSHOT_SMOKE_REFERENCE_DATE:-2026-05-08T12:00:00Z}"
 CONTAINER_TMP_DIR="$HOME/Library/Containers/$APP_BUNDLE_ID/Data/tmp"
 SUMMARY_DIR="$CONTAINER_TMP_DIR/CalShotSmokeSummaries/$(date +%Y%m%d-%H%M%S)-$$"
 CONTAINER_INPUT_DIR="$CONTAINER_TMP_DIR/CalShotSmokeInput"
@@ -54,6 +55,7 @@ run_case() {
 
   /usr/bin/open -n "$APP_PATH" --args \
     --calshot-open-image "$staged_image" \
+    --calshot-smoke-reference-date "$SMOKE_REFERENCE_DATE" \
     --calshot-smoke-summary-file "$summary_file"
 
   for _ in {1..80}; do

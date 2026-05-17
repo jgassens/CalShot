@@ -5,6 +5,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var menuBarController: MenuBarController?
     private var globalTextHotkeyController: GlobalTextHotkeyController?
     private let coordinator = ProcessingCoordinator()
+    private let sparkleUpdateController = SparkleUpdateController()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.servicesProvider = self
@@ -15,6 +16,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             onProcessClipboard: { [weak self] in self?.coordinator.processClipboardImage() },
             onSendSelectedText: { [weak self] in self?.coordinator.processSelectedTextUsingCopyShortcut() },
             onDropInput: { [weak self] input in self?.coordinator.processDroppedInput(input) },
+            onCheckForUpdates: { [weak self] in self?.sparkleUpdateController.checkForUpdates() },
             onQuit: { NSApp.terminate(nil) }
         )
         globalTextHotkeyController = GlobalTextHotkeyController(
@@ -25,10 +27,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         DropPasteboardDiagnostics.resetLog()
         let launchConfiguration = Self.debugLaunchConfiguration()
         for url in launchConfiguration.imageURLs {
-            coordinator.processImage(at: url, smokeSummaryURL: launchConfiguration.smokeSummaryURL)
+            coordinator.processImage(
+                at: url,
+                smokeSummaryURL: launchConfiguration.smokeSummaryURL,
+                referenceDate: launchConfiguration.referenceDate
+            )
         }
         for url in launchConfiguration.emailURLs {
-            coordinator.processEmail(at: url)
+            coordinator.processEmail(
+                at: url,
+                smokeSummaryURL: launchConfiguration.smokeSummaryURL,
+                referenceDate: launchConfiguration.referenceDate
+            )
         }
         #endif
     }
@@ -56,6 +66,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         var imageURLs: [URL] = []
         var emailURLs: [URL] = []
         var smokeSummaryURL: URL?
+        var referenceDate: Date?
     }
 
     private static func debugLaunchConfiguration() -> DebugLaunchConfiguration {
@@ -78,10 +89,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             } else if argument.hasPrefix("--calshot-smoke-summary-file=") {
                 let path = String(argument.dropFirst("--calshot-smoke-summary-file=".count))
                 configuration.smokeSummaryURL = URL(fileURLWithPath: path)
+            } else if argument == "--calshot-smoke-reference-date", let value = iterator.next() {
+                configuration.referenceDate = smokeReferenceDate(from: value)
+            } else if argument.hasPrefix("--calshot-smoke-reference-date=") {
+                let value = String(argument.dropFirst("--calshot-smoke-reference-date=".count))
+                configuration.referenceDate = smokeReferenceDate(from: value)
             }
         }
 
         return configuration
     }
+
+    private static func smokeReferenceDate(from value: String) -> Date? {
+        smokeReferenceDateFormatter.date(from: value)
+    }
+
+    private static let smokeReferenceDateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
     #endif
 }

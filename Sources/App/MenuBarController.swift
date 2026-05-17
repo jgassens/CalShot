@@ -7,6 +7,7 @@ final class MenuBarController: NSObject {
     private let onProcessClipboard: () -> Void
     private let onSendSelectedText: () -> Void
     private let onDropInput: (DroppedInput) -> Void
+    private let onCheckForUpdates: () -> Void
     private let onQuit: () -> Void
 
     init(
@@ -14,6 +15,7 @@ final class MenuBarController: NSObject {
         onProcessClipboard: @escaping () -> Void,
         onSendSelectedText: @escaping () -> Void,
         onDropInput: @escaping (DroppedInput) -> Void,
+        onCheckForUpdates: @escaping () -> Void,
         onQuit: @escaping () -> Void
     ) {
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -21,6 +23,7 @@ final class MenuBarController: NSObject {
         self.onProcessClipboard = onProcessClipboard
         self.onSendSelectedText = onSendSelectedText
         self.onDropInput = onDropInput
+        self.onCheckForUpdates = onCheckForUpdates
         self.onQuit = onQuit
         super.init()
         configure()
@@ -46,6 +49,10 @@ final class MenuBarController: NSObject {
 
         menu.addItem(NSMenuItem.separator())
 
+        let updates = NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: "")
+        updates.target = self
+        menu.addItem(updates)
+
         let quit = NSMenuItem(title: "Quit CalShot", action: #selector(quitApp), keyEquivalent: "q")
         quit.target = self
         menu.addItem(quit)
@@ -68,6 +75,10 @@ final class MenuBarController: NSObject {
 
     @objc private func sendSelectedText() {
         onSendSelectedText()
+    }
+
+    @objc private func checkForUpdates() {
+        onCheckForUpdates()
     }
 
     @objc private func quitApp() {

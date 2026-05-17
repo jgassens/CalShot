@@ -461,19 +461,13 @@ private struct DateTimeTextFields: View {
 
 private enum DateTextParser {
     static func dateString(from date: Date, timeZone: TimeZone) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = .current
-        formatter.timeZone = timeZone
-        formatter.dateFormat = "M/d/yyyy"
-        return formatter.string(from: date)
+        dateDisplayFormatter.timeZone = timeZone
+        return dateDisplayFormatter.string(from: date)
     }
 
     static func timeString(from date: Date, timeZone: TimeZone) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = .current
-        formatter.timeZone = timeZone
-        formatter.dateFormat = "h:mm a"
-        return formatter.string(from: date)
+        timeDisplayFormatter.timeZone = timeZone
+        return timeDisplayFormatter.string(from: date)
     }
 
     static func dateComponents(from text: String, timeZone: TimeZone) -> DateComponents? {
@@ -486,15 +480,10 @@ private enum DateTextParser {
             normalized += "/\(year)"
         }
 
-        let formats = ["M/d/yyyy", "M/d/yy", "M-d-yyyy", "MMM d yyyy", "MMMM d yyyy", "MMM d, yyyy", "MMMM d, yyyy"]
         let calendar = calendar(timeZone: timeZone)
-        for format in formats {
-            let formatter = DateFormatter()
-            formatter.locale = .current
+        for formatter in parseDateFormatters {
             formatter.timeZone = timeZone
             formatter.calendar = calendar
-            formatter.dateFormat = format
-            formatter.isLenient = true
             if let date = formatter.date(from: normalized) {
                 return calendar.dateComponents([.year, .month, .day], from: date)
             }
@@ -508,15 +497,10 @@ private enum DateTextParser {
             return calendar(timeZone: timeZone).dateComponents([.hour, .minute], from: fallbackDate)
         }
 
-        let formats = ["h:mm a", "h a", "ha", "H:mm", "H"]
         let calendar = calendar(timeZone: timeZone)
-        for format in formats {
-            let formatter = DateFormatter()
-            formatter.locale = .current
+        for formatter in parseTimeFormatters {
             formatter.timeZone = timeZone
             formatter.calendar = calendar
-            formatter.dateFormat = format
-            formatter.isLenient = true
             if let date = formatter.date(from: normalized) {
                 return calendar.dateComponents([.hour, .minute], from: date)
             }
@@ -529,6 +513,40 @@ private enum DateTextParser {
         calendar.timeZone = timeZone
         return calendar
     }
+
+    private static let dateDisplayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.dateFormat = "M/d/yyyy"
+        return formatter
+    }()
+
+    private static let timeDisplayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.dateFormat = "h:mm a"
+        return formatter
+    }()
+
+    private static let parseDateFormatters: [DateFormatter] = {
+        ["M/d/yyyy", "M/d/yy", "M-d-yyyy", "MMM d yyyy", "MMMM d yyyy", "MMM d, yyyy", "MMMM d, yyyy"].map { format in
+            let formatter = DateFormatter()
+            formatter.locale = .current
+            formatter.isLenient = true
+            formatter.dateFormat = format
+            return formatter
+        }
+    }()
+
+    private static let parseTimeFormatters: [DateFormatter] = {
+        ["h:mm a", "h a", "ha", "H:mm", "H"].map { format in
+            let formatter = DateFormatter()
+            formatter.locale = .current
+            formatter.isLenient = true
+            formatter.dateFormat = format
+            return formatter
+        }
+    }()
 }
 
 private struct CalendarSwatchDot: View {
@@ -584,14 +602,18 @@ private struct TimeZonePreview: View {
     }
 
     private func timeRange(start: Date, end: Date?, timeZone: TimeZone) -> String {
+        Self.timeRangeFormatter.timeZone = timeZone
+        let end = end ?? start.addingTimeInterval(60 * 60)
+        return "\(Self.timeRangeFormatter.string(from: start)) - \(Self.timeRangeFormatter.string(from: end))"
+    }
+
+    private static let timeRangeFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = .current
-        formatter.timeZone = timeZone
         formatter.dateStyle = .none
         formatter.timeStyle = .short
-        let end = end ?? start.addingTimeInterval(60 * 60)
-        return "\(formatter.string(from: start)) - \(formatter.string(from: end))"
-    }
+        return formatter
+    }()
 }
 
 private struct TimeZonePreviewRow: View {
@@ -758,13 +780,17 @@ private struct ConflictRow: View {
             return "All day"
         }
 
+        Self.timeFormatter.timeZone = timeZone
+        return "\(Self.timeFormatter.string(from: conflict.start)) to \(Self.timeFormatter.string(from: conflict.end))"
+    }
+
+    private static let timeFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = .current
-        formatter.timeZone = timeZone
         formatter.timeStyle = .short
         formatter.dateStyle = .none
-        return "\(formatter.string(from: conflict.start)) to \(formatter.string(from: conflict.end))"
-    }
+        return formatter
+    }()
 }
 
 private extension View {

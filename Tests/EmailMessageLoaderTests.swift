@@ -227,6 +227,43 @@ final class EmailMessageLoaderTests: XCTestCase {
         XCTAssertEqual(email.links.map(\.absoluteString), ["https://example.edu/fallback"])
     }
 
+    func testMalformedMultipartWithoutBoundaryKeepsReadableBody() throws {
+        let url = try writeEML("""
+        Subject: Broken Multipart Invite
+        Content-Type: multipart/mixed
+
+        Meet May 21 at 4 PM.
+        Details: https://example.edu/broken-multipart
+        """)
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let email = try EmailMessageLoader.load(from: url)
+
+        XCTAssertTrue(email.bodyText.contains("Meet May 21 at 4 PM."))
+        XCTAssertEqual(email.links.map(\.absoluteString), ["https://example.edu/broken-multipart"])
+    }
+
+    func testNestedHTMLMessageKeepsHrefLink() throws {
+        let nestedHTML = """
+        Subject: Nested Invite
+        Content-Type: text/html; charset=utf-8
+
+        <html><body><p>Meet May 22 at 11 AM.</p><a href="https://teams.example.edu/nested">Join nested meeting</a></body></html>
+        """
+        let url = try writeEML("""
+        Subject: Forwarded Invite
+        Content-Type: message/rfc822
+
+        \(nestedHTML)
+        """)
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let email = try EmailMessageLoader.load(from: url)
+
+        XCTAssertTrue(email.bodyText.contains("Meet May 22 at 11 AM."))
+        XCTAssertEqual(email.links.map(\.absoluteString), ["https://teams.example.edu/nested"])
+    }
+
     func testOutlookStyleEmailProducesEventDetails() throws {
         let bridge = ChronoBridge(bundle: Bundle(for: Self.self))
         try XCTSkipUnless(bridge.loaded, "chrono.bundle.js is not available in the test bundle")

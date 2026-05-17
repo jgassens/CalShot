@@ -1273,9 +1273,10 @@ Current direct-distribution lane:
 ```bash
 ./script/build_dmg.sh
 CALSHOT_NOTARY_PROFILE=calshot-notary ./script/build_dmg.sh --notarize
+./script/generate_appcast.sh --artifact dist/CalShot-<version>-<build>-notarized.dmg --release-tag v<version>
 ```
 
-The release script builds a Release archive, signs with a Developer ID Application identity, verifies bundle resources and entitlements, creates a DMG with an `/Applications` symlink, optionally submits to Apple notarization, staples the result, and writes a SHA-256 sidecar.
+The release script builds a Release archive, signs with a Developer ID Application identity, verifies bundle resources, Sparkle updater settings, and entitlements, creates a DMG with an `/Applications` symlink, optionally submits to Apple notarization, staples the result, and writes a SHA-256 sidecar. Sparkle reads `appcast.xml` from the latest GitHub Release and installs signed DMG updates when `CFBundleVersion` increases.
 
 Possible slices:
 
@@ -1304,7 +1305,15 @@ Possible slices:
 - publish the exact DMG that passed verification.
 - test on a clean Mac user account.
 
-### Slice 6.4 — App Store decision
+### Slice 6.4 — Sparkle appcast updates
+
+- bump `CFBundleShortVersionString` and `CFBundleVersion` in `project.yml`;
+- build and notarize the DMG;
+- generate a signed Sparkle appcast with `script/generate_appcast.sh`;
+- upload the DMG and `appcast.xml` to the matching GitHub Release;
+- install the previous version and confirm Check for Updates finds the new build.
+
+### Slice 6.5 — App Store decision
 
 The App Store path may require replacing `screencapture` with ScreenCaptureKit and checking every entitlement/dependency. Keep this separate from the local personal-use app.
 

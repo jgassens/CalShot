@@ -232,8 +232,10 @@ enum DropPasteboardDiagnostics {
     }
 
     private static func timestamp() -> String {
-        ISO8601DateFormatter().string(from: Date())
+        timestampFormatter.string(from: Date())
     }
+
+    private static let timestampFormatter = ISO8601DateFormatter()
 }
 
 enum DropInputLoaderError: Error, LocalizedError {

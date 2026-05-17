@@ -1,5 +1,6 @@
 .DS_Store
-CalShot.xcodeproj/
+*.xcodeproj/
+.claude/
 build/
 dist/
 DerivedData/

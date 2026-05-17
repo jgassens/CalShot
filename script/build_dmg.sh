@@ -145,19 +145,31 @@ BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP_PATH/Contents/
 BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP_PATH/Contents/Info.plist")
 ICON_NAME=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$APP_PATH/Contents/Info.plist")
 LSUI_ELEMENT=$(/usr/libexec/PlistBuddy -c "Print :LSUIElement" "$APP_PATH/Contents/Info.plist")
+FEED_URL=$(/usr/libexec/PlistBuddy -c "Print :SUFeedURL" "$APP_PATH/Contents/Info.plist")
+PUBLIC_KEY=$(/usr/libexec/PlistBuddy -c "Print :SUPublicEDKey" "$APP_PATH/Contents/Info.plist")
+AUTO_CHECKS=$(/usr/libexec/PlistBuddy -c "Print :SUEnableAutomaticChecks" "$APP_PATH/Contents/Info.plist")
+INSTALLER_SERVICE=$(/usr/libexec/PlistBuddy -c "Print :SUEnableInstallerLauncherService" "$APP_PATH/Contents/Info.plist")
 
 [[ "$BUNDLE_ID" == "$APP_BUNDLE_ID" ]] || { echo "Expected bundle id $APP_BUNDLE_ID, got $BUNDLE_ID" >&2; exit 1; }
 [[ "$ICON_NAME" == "AppIcon" ]] || { echo "Expected CFBundleIconName=AppIcon, got $ICON_NAME" >&2; exit 1; }
 [[ "$LSUI_ELEMENT" == "true" ]] || { echo "Expected LSUIElement=true, got $LSUI_ELEMENT" >&2; exit 1; }
+[[ "$FEED_URL" == "https://github.com/jgassens/CalShot/releases/latest/download/appcast.xml" ]] || { echo "Unexpected Sparkle feed URL: $FEED_URL" >&2; exit 1; }
+[[ "$PUBLIC_KEY" != *PENDING* && ${#PUBLIC_KEY} -gt 30 ]] || { echo "Missing valid Sparkle public key" >&2; exit 1; }
+[[ "$AUTO_CHECKS" == "true" ]] || { echo "Expected Sparkle automatic checks to be enabled" >&2; exit 1; }
+[[ "$INSTALLER_SERVICE" == "true" ]] || { echo "Expected Sparkle installer launcher service to be enabled" >&2; exit 1; }
 [[ -f "$APP_PATH/Contents/Resources/Assets.car" ]] || { echo "Missing compiled asset catalog in app resources" >&2; exit 1; }
 [[ -f "$APP_PATH/Contents/Resources/chrono.bundle.js" ]] || { echo "Missing chrono.bundle.js in app resources" >&2; exit 1; }
 [[ -f "$APP_PATH/Contents/Resources/chrono-node-MIT.txt" ]] || { echo "Missing chrono license in app resources" >&2; exit 1; }
+[[ -d "$APP_PATH/Contents/Frameworks/Sparkle.framework" ]] || { echo "Missing Sparkle.framework" >&2; exit 1; }
+[[ -d "$APP_PATH/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Installer.xpc" ]] || { echo "Missing Sparkle Installer.xpc" >&2; exit 1; }
 
 if [[ "$UNSIGNED" -eq 0 ]]; then
   codesign --verify --deep --strict --verbose=2 "$APP_PATH"
   codesign -d --entitlements - "$APP_PATH" 2>/dev/null | grep -q "com.apple.security.app-sandbox"
   codesign -d --entitlements - "$APP_PATH" 2>/dev/null | grep -q "com.apple.security.personal-information.calendars"
   codesign -d --entitlements - "$APP_PATH" 2>/dev/null | grep -q "com.apple.security.network.client"
+  codesign -d --entitlements - "$APP_PATH" 2>/dev/null | grep -q "$(printf '%s' "$APP_BUNDLE_ID-spks")"
+  codesign -d --entitlements - "$APP_PATH" 2>/dev/null | grep -q "$(printf '%s' "$APP_BUNDLE_ID-spki")"
 fi
 
 ARTIFACT_SUFFIX="unnotarized"

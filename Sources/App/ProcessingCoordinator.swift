@@ -60,11 +60,11 @@ final class ProcessingCoordinator {
         }
     }
 
-    func processImage(at url: URL, smokeSummaryURL: URL? = nil) {
+    func processImage(at url: URL, smokeSummaryURL: URL? = nil, referenceDate: Date? = nil) {
         NSApp.activate(ignoringOtherApps: true)
         do {
             let image = try ImageLoader.loadImage(from: url)
-            process(image, smokeSummaryURL: smokeSummaryURL)
+            process(image, smokeSummaryURL: smokeSummaryURL, referenceDate: referenceDate)
         } catch {
             showAlert(title: "Could not open image", message: error.localizedDescription)
         }
@@ -99,7 +99,7 @@ final class ProcessingCoordinator {
         }
     }
 
-    func processEmail(at url: URL) {
+    func processEmail(at url: URL, smokeSummaryURL: URL? = nil, referenceDate: Date? = nil) {
         NSApp.activate(ignoringOtherApps: true)
         let didAccess = url.startAccessingSecurityScopedResource()
         Task { @MainActor in
@@ -114,9 +114,14 @@ final class ProcessingCoordinator {
                 let imageOCRText = try await ocrText(from: email.imageAttachments)
                 let text = email.combinedTextForParsing(imageOCRText: imageOCRText)
                 let document = OCRDocument.textOnly(text)
-                var draft = merger.makeDraft(from: document)
+                var draft = merger.makeDraft(from: document, referenceDate: referenceDate ?? Date())
                 draft = await urlResolutionService.resolvingMeetingRedirects(in: draft, document: document)
                 applyEmailSubjectTitle(email.cleanedSubject, to: &draft)
+                #if DEBUG
+                if let smokeSummaryURL {
+                    SmokeSummary.write(draft, to: smokeSummaryURL)
+                }
+                #endif
 
                 let preview = TextPreviewImage.makeEmail(
                     subject: email.cleanedSubject,
@@ -126,16 +131,21 @@ final class ProcessingCoordinator {
                 )
                 reviewPresenter.show(image: preview, document: document, draft: draft, calendarService: calendarService)
             } catch {
+                #if DEBUG
+                if let smokeSummaryURL {
+                    SmokeSummary.write(EventDraft.empty(notes: "Email parsing failed: \(error.localizedDescription)"), to: smokeSummaryURL)
+                }
+                #endif
                 showAlert(title: "Could not read email", message: error.localizedDescription)
             }
         }
     }
 
-    private func process(_ image: NSImage, smokeSummaryURL: URL? = nil) {
+    private func process(_ image: NSImage, smokeSummaryURL: URL? = nil, referenceDate: Date? = nil) {
         Task { @MainActor in
             do {
                 let document = try await OCRService.recognizeDocument(in: image)
-                var draft = merger.makeDraft(from: document)
+                var draft = merger.makeDraft(from: document, referenceDate: referenceDate ?? Date())
                 draft = await urlResolutionService.resolvingMeetingRedirects(in: draft, document: document)
                 #if DEBUG
                 if let smokeSummaryURL {

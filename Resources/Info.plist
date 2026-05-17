@@ -54,5 +54,15 @@
 			</array>
 		</dict>
 	</array>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
+	<key>SUEnableSystemProfiling</key>
+	<false/>
+	<key>SUFeedURL</key>
+	<string>https://github.com/jgassens/CalShot/releases/latest/download/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>+R0D/XHhVbmm4+rfs2BzMbE+p8cWWBPvU6TtJkTKPco=</string>
 </dict>
 </plist>

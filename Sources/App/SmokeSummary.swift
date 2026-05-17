@@ -3,13 +3,11 @@ import Foundation
 #if DEBUG
 enum SmokeSummary {
     static func string(for draft: EventDraft) -> String {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
         return [
             "title=\(draft.title)",
             "allDay=\(draft.allDay)",
-            "start=\(draft.start.map { formatter.string(from: $0) } ?? "nil")",
-            "end=\(draft.end.map { formatter.string(from: $0) } ?? "nil")",
+            "start=\(draft.start.map { timestampFormatter.string(from: $0) } ?? "nil")",
+            "end=\(draft.end.map { timestampFormatter.string(from: $0) } ?? "nil")",
             "location=\(draft.location ?? "nil")",
             "url=\(draft.url?.absoluteString ?? "nil")",
             "canCreate=\(draft.canCreate)"
@@ -27,5 +25,11 @@ enum SmokeSummary {
             NSLog("[CalShot Smoke] Could not write smoke summary: \(error.localizedDescription)")
         }
     }
+
+    private static let timestampFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
 }
 #endif

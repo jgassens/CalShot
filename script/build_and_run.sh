@@ -126,10 +126,20 @@ if [[ "$VERIFY" -eq 1 ]]; then
 
   /usr/libexec/PlistBuddy -c "Print :NSCalendarsWriteOnlyAccessUsageDescription" "$APP_PATH/Contents/Info.plist" >/dev/null
   /usr/libexec/PlistBuddy -c "Print :NSCalendarsFullAccessUsageDescription" "$APP_PATH/Contents/Info.plist" >/dev/null
+  FEED_URL=$(/usr/libexec/PlistBuddy -c "Print :SUFeedURL" "$APP_PATH/Contents/Info.plist")
+  [[ "$FEED_URL" == "https://github.com/jgassens/CalShot/releases/latest/download/appcast.xml" ]] || { echo "Unexpected Sparkle feed URL: $FEED_URL" >&2; exit 1; }
+  PUBLIC_KEY=$(/usr/libexec/PlistBuddy -c "Print :SUPublicEDKey" "$APP_PATH/Contents/Info.plist")
+  [[ "$PUBLIC_KEY" != *PENDING* && ${#PUBLIC_KEY} -gt 30 ]] || { echo "Missing valid Sparkle public key" >&2; exit 1; }
+  INSTALLER_SERVICE=$(/usr/libexec/PlistBuddy -c "Print :SUEnableInstallerLauncherService" "$APP_PATH/Contents/Info.plist")
+  [[ "$INSTALLER_SERVICE" == "true" ]] || { echo "Expected Sparkle installer launcher service to be enabled" >&2; exit 1; }
+  [[ -d "$APP_PATH/Contents/Frameworks/Sparkle.framework" ]] || { echo "Missing Sparkle.framework" >&2; exit 1; }
+  [[ -d "$APP_PATH/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Installer.xpc" ]] || { echo "Missing Sparkle Installer.xpc" >&2; exit 1; }
   SERVICE_TITLE=$(/usr/libexec/PlistBuddy -c "Print :NSServices:0:NSMenuItem:default" "$APP_PATH/Contents/Info.plist")
   [[ "$SERVICE_TITLE" == "Send to CalShot" ]] || { echo "Expected Services menu item, got $SERVICE_TITLE" >&2; exit 1; }
   codesign -d --entitlements - "$APP_PATH" 2>/dev/null | grep -q "com.apple.security.personal-information.calendars"
   codesign -d --entitlements - "$APP_PATH" 2>/dev/null | grep -q "com.apple.security.network.client"
+  codesign -d --entitlements - "$APP_PATH" 2>/dev/null | grep -q "$(printf '%s' "$APP_BUNDLE_ID-spks")"
+  codesign -d --entitlements - "$APP_PATH" 2>/dev/null | grep -q "$(printf '%s' "$APP_BUNDLE_ID-spki")"
 fi
 
 OPEN_ARGS=(-n "$APP_PATH")
@@ -144,6 +154,9 @@ if [[ -n "$EMAIL_PATH" ]]; then
     OPEN_ARGS+=(--args)
   fi
   OPEN_ARGS+=(--calshot-open-email "$EMAIL_PATH")
+  if [[ -n "$SMOKE_SUMMARY_PATH" ]]; then
+    OPEN_ARGS+=(--calshot-smoke-summary-file "$SMOKE_SUMMARY_PATH")
+  fi
 fi
 
 /usr/bin/open "${OPEN_ARGS[@]}"

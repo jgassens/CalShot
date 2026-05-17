@@ -4,6 +4,10 @@ options:
   createIntermediateGroups: true
   deploymentTarget:
     macOS: "14.0"
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.7.3
 targets:
   CalShot:
     type: application
@@ -37,6 +41,11 @@ targets:
         NSHumanReadableCopyright: "Copyright (c) 2026 Jeremiah Gassensmith. All rights reserved."
         NSCalendarsWriteOnlyAccessUsageDescription: "Create calendar events from screenshots you review."
         NSCalendarsFullAccessUsageDescription: "Show selected-calendar availability and save reviewed events to the calendar you choose."
+        SUFeedURL: "https://github.com/jgassens/CalShot/releases/latest/download/appcast.xml"
+        SUPublicEDKey: "+R0D/XHhVbmm4+rfs2BzMbE+p8cWWBPvU6TtJkTKPco="
+        SUEnableAutomaticChecks: true
+        SUEnableInstallerLauncherService: true
+        SUEnableSystemProfiling: false
         NSServices:
           - NSMenuItem:
               default: Send to CalShot
@@ -53,6 +62,12 @@ targets:
         com.apple.security.personal-information.calendars: true
         com.apple.security.files.user-selected.read-only: true
         com.apple.security.network.client: true
+        com.apple.security.temporary-exception.mach-lookup.global-name:
+          - "$(PRODUCT_BUNDLE_IDENTIFIER)-spks"
+          - "$(PRODUCT_BUNDLE_IDENTIFIER)-spki"
+    dependencies:
+      - package: Sparkle
+        product: Sparkle
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.jgassens.CalShot

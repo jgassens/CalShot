@@ -140,12 +140,13 @@ private enum EmailMessageParser {
 
         let bodyText = accumulator.bodyText
         let combinedForLinks = ([bodyText] + accumulator.htmlTexts + accumulator.rawHTMLTexts).joined(separator: "\n")
+        let extractedLinks = links(in: combinedForLinks)
         return EmailMessage(
             subject: decodedHeader(headers["subject"]) ?? fallbackSubject,
             from: decodedHeader(headers["from"]),
             sentDate: decodedHeader(headers["date"]),
             bodyText: bodyText,
-            links: links(in: combinedForLinks),
+            links: uniqueLinks(extractedLinks + accumulator.links),
             imageAttachments: accumulator.imageAttachments
         )
     }
@@ -166,6 +167,13 @@ private enum EmailMessageParser {
             for partData in partDataList {
                 let (partHeaders, partBody) = splitHeadersAndBody(in: partData)
                 parsePart(headers: partHeaders, body: partBody, accumulator: &accumulator)
+            }
+            return
+        } else if contentType.mediaType.hasPrefix("multipart/") {
+            let fallbackText = normalizedPlainText(decodeText(body, charset: contentType.parameters["charset"] ?? "utf-8"))
+            EmailParseDiagnostics.log("multipartMissingBoundary type=\(contentType.mediaType) bodyChars=\(fallbackText.count)")
+            if !fallbackText.isEmpty {
+                accumulator.plainTexts.append(fallbackText)
             }
             return
         }
@@ -204,7 +212,15 @@ private enum EmailMessageParser {
             if !nested.bodyText.isEmpty {
                 accumulator.plainTexts.append(nested.bodyText)
             }
+            accumulator.links.append(contentsOf: nested.links)
             accumulator.imageAttachments.append(contentsOf: nested.imageAttachments)
+        }
+    }
+
+    private static func uniqueLinks(_ urls: [URL]) -> [URL] {
+        var seen: Set<String> = []
+        return urls.filter { url in
+            seen.insert(url.absoluteString).inserted
         }
     }
 
@@ -488,7 +504,7 @@ private enum EmailParseDiagnostics {
     static func log(_ message: String) {
         #if DEBUG
         guard let url else { return }
-        let line = "[\(ISO8601DateFormatter().string(from: Date()))] \(message)\n"
+        let line = "[\(timestampFormatter.string(from: Date()))] \(message)\n"
         if FileManager.default.fileExists(atPath: url.path),
            let handle = try? FileHandle(forWritingTo: url) {
             _ = try? handle.seekToEnd()
@@ -499,12 +515,15 @@ private enum EmailParseDiagnostics {
         }
         #endif
     }
+
+    private static let timestampFormatter = ISO8601DateFormatter()
 }
 
 private struct ParsedEmailAccumulator {
     var plainTexts: [String] = []
     var htmlTexts: [String] = []
     var rawHTMLTexts: [String] = []
+    var links: [URL] = []
     var imageAttachments: [EmailImageAttachment] = []
 
     var bodyText: String {
